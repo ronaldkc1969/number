@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社会福祉士国家試験 頻出数値クイズ2023</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; color: #333; line-height: 1.6; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; font-size: 1.5rem; margin-bottom: 20px; }
+        .progress { text-align: right; font-size: 0.9rem; color: #666; margin-bottom: 10px; }
+        .question { font-weight: bold; font-size: 1.1rem; margin-bottom: 20px; border-left: 5px solid #3498db; padding-left: 15px; }
+        .option { display: block; width: 100%; padding: 12px 15px; margin-bottom: 10px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: all 0.2s; text-align: left; background: none; font-size: 1rem; }
+        .option:hover { background-color: #f8f9fa; border-color: #3498db; }
+        .result-area { margin-top: 20px; padding: 20px; border-radius: 8px; display: none; }
+        .correct { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .incorrect { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .explanation { margin-top: 10px; font-size: 0.95rem; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 10px; }
+        .btn-next { display: block; width: 100%; padding: 15px; background-color: #3498db; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; margin-top: 20px; }
+        .btn-next:hover { background-color: #2980b9; }
+        #score-screen { text-align: center; display: none; }
+        .score-val { font-size: 3rem; color: #e67e22; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="quiz-screen">
+        <h1>社会福祉士国家試験 頻出数値クイズ (2023年度版)</h1>
+        <div class="progress" id="progress">第 1 問 / 20 問</div>
+        <div class="question" id="question">問題文がここに入ります</div>
+        <div id="options">
+            </div>
+        <div id="result-area" class="result-area">
+            <div id="result-text" style="font-weight: bold;"></div>
+            <div id="explanation-text" class="explanation"></div>
+        </div>
+        <button id="btn-next" class="btn-next" style="display: none;" onclick="nextQuestion()">次の問題へ</button>
+    </div>
+
+    <div id="score-screen">
+        <h1>結果発表</h1>
+        <div class="score-val" id="final-score">0 / 20</div>
+        <p id="feedback-msg"></p>
+        <button class="btn-next" onclick="location.reload()">もう一度挑戦する</button>
+    </div>
+</div>
+
+<script>
+const quizData = [
+    { q: "「令和5年版高齢社会白書」によると、日本の総人口に占める高齢者（65歳以上）の割合（高齢化率）は約何％ですか。", options: ["約25.0％", "約29.0％", "約33.0％", "約38.0％"], ans: 1, exp: "2022年10月1日時点の推計で29.0％となっており、世界最高水準です。" },
+    { q: "「令和4年（2022）人口動態統計」において、日本の合計特殊出生率はいくらでしたか。", options: ["1.08", "1.26", "1.30", "1.42"], ans: 1, exp: "2022年の数値は1.26となり、過去最低（2005年）の数値と並びました。" },
+    { q: "「令和4年度被保護者調査」において、生活保護の世帯類型別で最も割合が高いものはどれですか。", options: ["母子世帯", "傷病者・障害者世帯", "高齢者世帯", "その他世帯"], ans: 2, exp: "高齢者世帯は全体の半数を超え、その大半を単身世帯が占めています。" },
+    { q: "「令和4年版障害者白書」等に基づき、日本の障害者総数は約何万人と推計されていますか。", options: ["約500万人", "約750万人", "約965万人", "約1,500万人"], ans: 2, exp: "身体・知的・精神を合わせた総数は約965万人（人口の約7.6％）です。" },
+    { q: "介護保険の第1号被保険者の保険料（第8期：2021～2023年度）の全国平均月額はいくらですか。", options: ["約4,800円", "約6,014円", "約7,500円", "約9,000円"], ans: 1, exp: "第8期の全国加重平均額は6,014円となり、初めて6,000円を超えました。" },
+    { q: "2022年度の児童相談所による虐待相談対応件数は、およそ何万件ですか。", options: ["約10.5万件", "約15.2万件", "約21.9万件", "約30.1万件"], ans: 2, exp: "21万9,170件で過去最多を更新しました。" },
+    { q: "「令和4年国民生活基礎調査」における相対的貧困率（2021年時点）はどれですか。", options: ["10.1％", "15.4％", "20.5％", "25.0％"], ans: 1, exp: "日本の相対的貧困率は15.4％で、およそ6.5人に1人が貧困状態にあります。" },
+    { q: "「令和4年社会福祉施設等調査」において、有料老人ホームの施設数はおよそいくつですか。", options: ["約3,000か所", "約8,000か所", "約16,700か所", "約50,000か所"], ans: 2, exp: "有料老人ホームは急増しており、約1万6,700か所を超えています。" },
+    { q: "2022年の日本の年間自殺者数（確定値）はおよそ何人ですか。", options: ["約15,000人", "約21,881人", "約25,000人", "約30,000人"], ans: 1, exp: "2022年は21,881人で、前年より増加しました。" },
+    { q: "日本の「国民医療費」の総額（令和3年度推計）はおよそいくらですか。", options: ["約10兆円", "約25兆円", "約45兆円", "約60兆円"], ans: 2, exp: "45兆808億円となり、過去最高を更新しています。" },
+    { q: "日本の精神病床の平均在院日数（2022年）はおよそ何日ですか。", options: ["約30日", "約100日", "約260日", "約500日"], ans: 2, exp: "平均在院日数は約260日であり、国際的に見ても非常に長いのが特徴です。" },
+    { q: "民間企業の障害者法定雇用率（2023年度時点）はいくらですか。", options: ["1.8％", "2.0％", "2.3％", "2.6％"], ans: 2, exp: "2021年3月より2.3％となっています（2024年4月に2.5％へ引き上げ）。" },
+    { q: "令和4年4月1日時点の、全国の待機児童数は何人でしたか。", options: ["2,944人", "10,500人", "25,000人", "52,000人"], ans: 0, exp: "2,944人で、調査開始以来最少となりました。" },
+    { q: "日本の社会保障給付費の総額（令和3年度決算）はおよそいくらですか。", options: ["約80兆円", "約100兆円", "約138.8兆円", "約200兆円"], ans: 2, exp: "138兆8,262億円で過去最高です。" },
+    { q: "介護保険の要介護・要支援認定者数（令和3年度末）はおよそ何人ですか。", options: ["約300万人", "約500万人", "約690万人", "約900万人"], ans: 2, exp: "認定者数は約690万人で、高齢者人口の増加とともに増え続けています。" },
+    { q: "老齢基礎年金（満額）の令和5年度の支給額（新規裁定者）は月額いくらですか。", options: ["64,816円", "66,250円", "68,000円", "72,500円"], ans: 1, exp: "物価・賃金変動を受け、前年度より増額改定されました。" },
+    { q: "2021年社会生活基本調査で、介護・看護を行っている人の平均時間は一日平均約何分ですか。", options: ["約60分", "約142分", "約240分", "約360分"], ans: 1, exp: "行動者平均で142分（2時間22分）です。" },
+    { q: "全世帯のうち、「単身世帯」が占める割合はどれですか（令和4年調査）。", options: ["15.2％", "23.4％", "32.9％", "45.1％"], ans: 2, exp: "32.9％で、世帯類型の中で最多となっています。" },
+    { q: "認知症対応型共同生活介護（グループホーム）の1ユニットの定員は何人以下ですか。", options: ["5人以下", "9人以下", "12人以下", "15人以下"], ans: 1, exp: "5人以上9人以下と規定されています。" },
+    { q: "日本の「労働力人口」（令和4年平均）はおよそ何人ですか。", options: ["約4,500万人", "約6,902万人", "約8,500万人", "約1億人"], ans: 1, exp: "15歳以上の就業者と完全失業者を合わせた労働力人口は約6,902万人です。" }
+];
+
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+const qEl = document.getElementById("question");
+const optEl = document.getElementById("options");
+const resEl = document.getElementById("result-area");
+const resText = document.getElementById("result-text");
+const expText = document.getElementById("explanation-text");
+const nextBtn = document.getElementById("btn-next");
+const progEl = document.getElementById("progress");
+
+function loadQuestion() {
+    answered = false;
+    resEl.style.display = "none";
+    nextBtn.style.display = "none";
+    const data = quizData[currentIdx];
+    progEl.innerText = `第 ${currentIdx + 1} 問 / ${quizData.length} 問`;
+    qEl.innerText = data.q;
+    optEl.innerHTML = "";
+    data.options.forEach((opt, i) => {
+        const btn = document.createElement("button");
+        btn.className = "option";
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(i);
+        optEl.appendChild(btn);
+    });
+}
+
+function checkAnswer(choice) {
+    if (answered) return;
+    answered = true;
+    const data = quizData[currentIdx];
+    const isCorrect = (choice === data.ans);
+    if (isCorrect) {
+        score++;
+        resText.innerText = "○ 正解！";
+        resEl.className = "result-area correct";
+    } else {
+        resText.innerText = "× 不正解...（正解： " + data.options[data.ans] + "）";
+        resEl.className = "result-area incorrect";
+    }
+    expText.innerText = data.exp;
+    resEl.style.display = "block";
+    nextBtn.style.display = "block";
+}
+
+function nextQuestion() {
+    currentIdx++;
+    if (currentIdx < quizData.length) {
+        loadQuestion();
+    } else {
+        showScore();
+    }
+}
+
+function showScore() {
+    document.getElementById("quiz-screen").style.display = "none";
+    document.getElementById("score-screen").style.display = "block";
+    document.getElementById("final-score").innerText = `${score} / ${quizData.length}`;
+    let msg = "";
+    if(score === 20) msg = "完璧です！数値の達人ですね！";
+    else if(score >= 15) msg = "素晴らしい！合格ラインを大きく超えています。";
+    else if(score >= 10) msg = "あと一歩！間違えた数値を重点的に覚え直しましょう。";
+    else msg = "まずは基本の統計数値から押さえていきましょう！";
+    document.getElementById("feedback-msg").innerText = msg;
+}
+
+loadQuestion();
+</script>
+</body>
+</html>
